@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
+import pandas as pd
 import joblib
 from get_12ECG_features import get_12ECG_features
 
