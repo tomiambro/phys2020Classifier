@@ -239,7 +239,6 @@ def get_12ECG_features_labels(data, header_data):
     Y = np.fft.fft(data[0])
     ff = np.linspace(0, (N/2)*er, N/2).flatten()
     fmax = float(ff[np.where(np.abs(Y[0:N//2]) == max(np.abs(Y[0:N//2])))])
-    print(fmax)
 
 
 #   We are only using data from lead1
