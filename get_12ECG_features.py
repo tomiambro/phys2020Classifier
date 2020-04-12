@@ -3,6 +3,12 @@
 import numpy as np
 from scipy.signal import butter, lfilter
 from scipy import stats
+from scipy import fft
+
+import neurokit2 as nk
+import pandas as pd
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 
 def detect_peaks(ecg_measurements,signal_frequency,gain):
 
@@ -166,7 +172,6 @@ def get_12ECG_features(data, header_data):
             label = iline.split(': ')[1].split(',')[0]
 
 
-    
 #   We are only using data from lead1
     peaks,idx = detect_peaks(data[0],sample_Fs,gain_lead[0])
    
@@ -228,35 +233,94 @@ def get_12ECG_features_labels(data, header_data):
             label = iline.split(': ')[1].split(',')[0]
 
 
-    
+    N = len(data[0])
+    er = sample_Fs/N # resolución espectral
+
+    Y = np.fft.fft(data[0])
+    ff = np.linspace(0, (N/2)*er, N/2).flatten()
+    fmax = float(ff[np.where(np.abs(Y[0:N//2]) == max(np.abs(Y[0:N//2])))])
+    print(fmax)
+
+
 #   We are only using data from lead1
     peaks,idx = detect_peaks(data[0],sample_Fs,gain_lead[0])
-   
+       
 #   mean
     mean_RR = np.mean(idx/sample_Fs*1000)
-    mean_Peaks = np.mean(peaks*gain_lead[0])
+    mean_R_Peaks = np.mean(peaks*gain_lead[0])
 
 #   median
     median_RR = np.median(idx/sample_Fs*1000)
-    median_Peaks = np.median(peaks*gain_lead[0])
+    median_R_Peaks = np.median(peaks*gain_lead[0])
 
 #   standard deviation
     std_RR = np.std(idx/sample_Fs*1000)
-    std_Peaks = np.std(peaks*gain_lead[0])
+    std_R_Peaks = np.std(peaks*gain_lead[0])
 
 #   variance
     var_RR = stats.tvar(idx/sample_Fs*1000)
-    var_Peaks = stats.tvar(peaks*gain_lead[0])
+    var_R_Peaks = stats.tvar(peaks*gain_lead[0])
 
 #   Skewness
     skew_RR = stats.skew(idx/sample_Fs*1000)
-    skew_Peaks = stats.skew(peaks*gain_lead[0])
+    skew_R_Peaks = stats.skew(peaks*gain_lead[0])
 
 #   Kurtosis
     kurt_RR = stats.kurtosis(idx/sample_Fs*1000)
-    kurt_Peaks = stats.kurtosis(peaks*gain_lead[0])
+    kurt_R_Peaks = stats.kurtosis(peaks*gain_lead[0])
 
-    features = [age,sex,mean_RR,mean_Peaks,median_RR,median_Peaks,std_RR,std_Peaks,var_RR,var_Peaks,skew_RR,skew_Peaks,kurt_RR,kurt_Peaks,label]
+#   RMSSD (HRV)
+    rmssd = np.sqrt(np.mean(np.square(np.diff(idx))))
 
+#   All Peaks
+    ecg_signal = nk.ecg_clean(data[0], sampling_rate=sample_Fs, method="biosppy")
+    _ , rpeaks = nk.ecg_peaks(ecg_signal, sampling_rate=sample_Fs)
+    try:
+        signal_peak, waves_peak = nk.ecg_delineate(ecg_signal, rpeaks, sampling_rate=sample_Fs)
+        t_peaks = waves_peak['ECG_T_Peaks']
+        p_peaks = waves_peak['ECG_P_Peaks']
+        q_peaks = waves_peak['ECG_Q_Peaks']
+        s_peaks = waves_peak['ECG_S_Peaks']
+        p_onsets = waves_peak['ECG_P_Onsets']
+        t_offsets = waves_peak['ECG_T_Offsets']
+    except ValueError:
+        print('Exception raised!')
+        pass
+
+#   T Peaks
+    t_peaks = np.asarray(t_peaks, dtype=float)
+    t_peaks = t_peaks[~np.isnan(t_peaks)]
+    t_peaks = [int(a) for a in t_peaks]
+    mean_T_Peaks = np.mean([data[0][w] for w in t_peaks])
+
+#   P peaks
+    p_peaks = np.asarray(p_peaks, dtype=float)
+    p_peaks = p_peaks[~np.isnan(p_peaks)]
+    p_peaks = [int(a) for a in p_peaks]
+    mean_P_Peaks = np.mean([data[0][w] for w in p_peaks])    
+
+#   Q peaks
+    q_peaks = np.asarray(q_peaks, dtype=float)
+    q_peaks = q_peaks[~np.isnan(q_peaks)]
+    q_peaks = [int(a) for a in q_peaks]
+    mean_Q_Peaks = np.mean([data[0][w] for w in q_peaks])
+
+#   S peaks
+    s_peaks = np.asarray(s_peaks, dtype=float)
+    s_peaks = s_peaks[~np.isnan(s_peaks)]
+    s_peaks = [int(a) for a in s_peaks]
+    mean_S_Peaks = np.mean([data[0][w] for w in s_peaks])
+
+#   P Onsets
+    p_onsets = np.asarray(p_onsets, dtype=float)
+    # p_onsets = p_onsets[~np.isnan(p_onsets)]
+    mean_P_Onsets = np.mean(p_onsets/sample_Fs*1000)
+
+#   T Onsets
+    t_offsets = np.asarray(t_offsets, dtype=float)
+    # t_offsets = t_offsets[~np.isnan(t_offsets)]
+    mean_T_offsets = np.mean(t_offsets/sample_Fs*1000)
+
+    features = [age,sex,fmax,mean_RR,mean_R_Peaks,mean_T_Peaks,mean_P_Peaks,mean_Q_Peaks,mean_S_Peaks,median_RR,median_R_Peaks,std_RR,std_R_Peaks,var_RR,var_R_Peaks,skew_RR,skew_R_Peaks,kurt_RR,kurt_R_Peaks,mean_P_Onsets,mean_T_offsets,rmssd,label]
   
     return features
