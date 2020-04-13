@@ -234,10 +234,10 @@ def get_12ECG_features_labels(data, header_data):
 
 
     N = len(data[0])
-    er = sample_Fs/N # resolución espectral
+    sp= sample_Fs/N    # resolución espectral
 
     Y = np.fft.fft(data[0])
-    ff = np.linspace(0, (N/2)*er, N/2).flatten()
+    ff = np.linspace(0, (N/2)*sp N/2).flatten()
     fmax = float(ff[np.where(np.abs(Y[0:N//2]) == max(np.abs(Y[0:N//2])))])
 
 
