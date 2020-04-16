@@ -100,7 +100,7 @@ if __name__ == '__main__':
         # save_challenge_predictions(output_directory,f,current_score,current_label,classes)
 
 
-    os.makedirs('tmp', exist_ok=True)
-    df_raw.to_feather('tmp/pyhs-raw')
+    os.makedirs('datasets/base', exist_ok=True)
+    df_raw.to_feather('datasets/base/pyhs-raw')
     print(df_raw)
     print('Done.')
