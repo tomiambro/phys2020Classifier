@@ -232,47 +232,49 @@ def get_12ECG_features_labels(data, header_data):
         elif iline.startswith('#Dx'):
             label = iline.split(': ')[1].split(',')[0]
 
+    signal = data[1]
+    gain = gain_lead[1]
 
-    N = len(data[0])
+    N = len(signal)
     sp= sample_Fs/N    # resolución espectral
 
-    Y = np.fft.fft(data[0])
-    ff = np.linspace(0, (N/2)*sp N/2).flatten()
+    Y = np.fft.fft(signal*gain)
+    ff = np.linspace(0, (N/2)*sp, N/2).flatten()
     fmax = float(ff[np.where(np.abs(Y[0:N//2]) == max(np.abs(Y[0:N//2])))])
 
 
 #   We are only using data from lead1
-    peaks,idx = detect_peaks(data[0],sample_Fs,gain_lead[0])
+    peaks,idx = detect_peaks(signal,sample_Fs,gain)
        
 #   mean
     mean_RR = np.mean(idx/sample_Fs*1000)
-    mean_R_Peaks = np.mean(peaks*gain_lead[0])
+    mean_R_Peaks = np.mean(peaks*gain)
 
 #   median
     median_RR = np.median(idx/sample_Fs*1000)
-    median_R_Peaks = np.median(peaks*gain_lead[0])
+    median_R_Peaks = np.median(peaks*gain)
 
 #   standard deviation
     std_RR = np.std(idx/sample_Fs*1000)
-    std_R_Peaks = np.std(peaks*gain_lead[0])
+    std_R_Peaks = np.std(peaks*gain)
 
 #   variance
     var_RR = stats.tvar(idx/sample_Fs*1000)
-    var_R_Peaks = stats.tvar(peaks*gain_lead[0])
+    var_R_Peaks = stats.tvar(peaks*gain)
 
 #   Skewness
     skew_RR = stats.skew(idx/sample_Fs*1000)
-    skew_R_Peaks = stats.skew(peaks*gain_lead[0])
+    skew_R_Peaks = stats.skew(peaks*gain)
 
 #   Kurtosis
     kurt_RR = stats.kurtosis(idx/sample_Fs*1000)
-    kurt_R_Peaks = stats.kurtosis(peaks*gain_lead[0])
+    kurt_R_Peaks = stats.kurtosis(peaks*gain)
 
 #   RMSSD (HRV)
     rmssd = np.sqrt(np.mean(np.square(np.diff(idx))))
 
 #   All Peaks
-    ecg_signal = nk.ecg_clean(data[0], sampling_rate=sample_Fs, method="biosppy")
+    ecg_signal = nk.ecg_clean(signal*gain, sampling_rate=sample_Fs, method="biosppy")
     _ , rpeaks = nk.ecg_peaks(ecg_signal, sampling_rate=sample_Fs)
     try:
         signal_peak, waves_peak = nk.ecg_delineate(ecg_signal, rpeaks, sampling_rate=sample_Fs)
@@ -290,25 +292,25 @@ def get_12ECG_features_labels(data, header_data):
     t_peaks = np.asarray(t_peaks, dtype=float)
     t_peaks = t_peaks[~np.isnan(t_peaks)]
     t_peaks = [int(a) for a in t_peaks]
-    mean_T_Peaks = np.mean([data[0][w] for w in t_peaks])
+    mean_T_Peaks = np.mean([signal[w] for w in t_peaks])
 
 #   P peaks
     p_peaks = np.asarray(p_peaks, dtype=float)
     p_peaks = p_peaks[~np.isnan(p_peaks)]
     p_peaks = [int(a) for a in p_peaks]
-    mean_P_Peaks = np.mean([data[0][w] for w in p_peaks])    
+    mean_P_Peaks = np.mean([signal[w] for w in p_peaks])    
 
 #   Q peaks
     q_peaks = np.asarray(q_peaks, dtype=float)
     q_peaks = q_peaks[~np.isnan(q_peaks)]
     q_peaks = [int(a) for a in q_peaks]
-    mean_Q_Peaks = np.mean([data[0][w] for w in q_peaks])
+    mean_Q_Peaks = np.mean([signal[w] for w in q_peaks])
 
 #   S peaks
     s_peaks = np.asarray(s_peaks, dtype=float)
     s_peaks = s_peaks[~np.isnan(s_peaks)]
     s_peaks = [int(a) for a in s_peaks]
-    mean_S_Peaks = np.mean([data[0][w] for w in s_peaks])
+    mean_S_Peaks = np.mean([signal[w] for w in s_peaks])
 
 #   P Onsets
     p_onsets = np.asarray(p_onsets, dtype=float)
