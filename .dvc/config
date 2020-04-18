@@ -1,0 +1,4 @@
+[core]
+    remote = tomdrive
+['remote "tomdrive"']
+    url = gdrive://1PkCTNmoM__aOi4ZkkTtdVO50lH57bXRb
