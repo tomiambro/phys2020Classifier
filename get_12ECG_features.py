@@ -232,8 +232,8 @@ def get_12ECG_features_labels(data, header_data):
         elif iline.startswith('#Dx'):
             label = iline.split(': ')[1].split(',')[0]
 
-    signal = data[1]
-    gain = gain_lead[1]
+    signal = data[3]
+    gain = gain_lead[3]
 
     N = len(signal)
     sp= sample_Fs/N    # resolución espectral
