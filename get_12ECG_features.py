@@ -240,7 +240,10 @@ def get_12ECG_features_labels(data, header_data):
 
     Y = np.fft.fft(signal*gain)
     ff = np.linspace(0, (N/2)*sp, N/2).flatten()
-    fmax = float(ff[np.where(np.abs(Y[0:N//2]) == max(np.abs(Y[0:N//2])))])
+    try:
+        fmax = float(ff[np.where(np.abs(Y[0:N//2]) == max(np.abs(Y[0:N//2])))[0]])
+    except TypeError:
+        fmax = np.NaN
 
 
 #   We are only using data from lead1
@@ -273,10 +276,12 @@ def get_12ECG_features_labels(data, header_data):
 #   RMSSD (HRV)
     rmssd = np.sqrt(np.mean(np.square(np.diff(idx))))
 
+
+    error = False
 #   All Peaks
-    ecg_signal = nk.ecg_clean(signal*gain, sampling_rate=sample_Fs, method="biosppy")
-    _ , rpeaks = nk.ecg_peaks(ecg_signal, sampling_rate=sample_Fs)
     try:
+        ecg_signal = nk.ecg_clean(signal*gain, sampling_rate=sample_Fs, method="biosppy")
+        _ , rpeaks = nk.ecg_peaks(ecg_signal, sampling_rate=sample_Fs)
         signal_peak, waves_peak = nk.ecg_delineate(ecg_signal, rpeaks, sampling_rate=sample_Fs)
         t_peaks = waves_peak['ECG_T_Peaks']
         p_peaks = waves_peak['ECG_P_Peaks']
@@ -286,41 +291,49 @@ def get_12ECG_features_labels(data, header_data):
         t_offsets = waves_peak['ECG_T_Offsets']
     except ValueError:
         print('Exception raised!')
+        error = True
+        pass
+    except IndexError:
+        print('Exception raised!')
+        error = True
         pass
 
-#   T Peaks
-    t_peaks = np.asarray(t_peaks, dtype=float)
-    t_peaks = t_peaks[~np.isnan(t_peaks)]
-    t_peaks = [int(a) for a in t_peaks]
-    mean_T_Peaks = np.mean([signal[w] for w in t_peaks])
+    mean_T_Peaks,mean_P_Peaks,mean_Q_Peaks,mean_S_Peaks,mean_P_Onsets,mean_T_offsets = np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN
+    
+    if not error:
+    #   T Peaks
+        t_peaks = np.asarray(t_peaks, dtype=float)
+        t_peaks = t_peaks[~np.isnan(t_peaks)]
+        t_peaks = [int(a) for a in t_peaks]
+        mean_T_Peaks = np.mean([signal[w] for w in t_peaks])
 
-#   P peaks
-    p_peaks = np.asarray(p_peaks, dtype=float)
-    p_peaks = p_peaks[~np.isnan(p_peaks)]
-    p_peaks = [int(a) for a in p_peaks]
-    mean_P_Peaks = np.mean([signal[w] for w in p_peaks])    
+    #   P peaks
+        p_peaks = np.asarray(p_peaks, dtype=float)
+        p_peaks = p_peaks[~np.isnan(p_peaks)]
+        p_peaks = [int(a) for a in p_peaks]
+        mean_P_Peaks = np.mean([signal[w] for w in p_peaks])    
 
-#   Q peaks
-    q_peaks = np.asarray(q_peaks, dtype=float)
-    q_peaks = q_peaks[~np.isnan(q_peaks)]
-    q_peaks = [int(a) for a in q_peaks]
-    mean_Q_Peaks = np.mean([signal[w] for w in q_peaks])
+    #   Q peaks
+        q_peaks = np.asarray(q_peaks, dtype=float)
+        q_peaks = q_peaks[~np.isnan(q_peaks)]
+        q_peaks = [int(a) for a in q_peaks]
+        mean_Q_Peaks = np.mean([signal[w] for w in q_peaks])
 
-#   S peaks
-    s_peaks = np.asarray(s_peaks, dtype=float)
-    s_peaks = s_peaks[~np.isnan(s_peaks)]
-    s_peaks = [int(a) for a in s_peaks]
-    mean_S_Peaks = np.mean([signal[w] for w in s_peaks])
+    #   S peaks
+        s_peaks = np.asarray(s_peaks, dtype=float)
+        s_peaks = s_peaks[~np.isnan(s_peaks)]
+        s_peaks = [int(a) for a in s_peaks]
+        mean_S_Peaks = np.mean([signal[w] for w in s_peaks])
 
-#   P Onsets
-    p_onsets = np.asarray(p_onsets, dtype=float)
-    # p_onsets = p_onsets[~np.isnan(p_onsets)]
-    mean_P_Onsets = np.mean(p_onsets/sample_Fs*1000)
+    #   P Onsets
+        p_onsets = np.asarray(p_onsets, dtype=float)
+        # p_onsets = p_onsets[~np.isnan(p_onsets)]
+        mean_P_Onsets = np.mean(p_onsets/sample_Fs*1000)
 
-#   T Onsets
-    t_offsets = np.asarray(t_offsets, dtype=float)
-    # t_offsets = t_offsets[~np.isnan(t_offsets)]
-    mean_T_offsets = np.mean(t_offsets/sample_Fs*1000)
+    #   T Onsets
+        t_offsets = np.asarray(t_offsets, dtype=float)
+        # t_offsets = t_offsets[~np.isnan(t_offsets)]
+        mean_T_offsets = np.mean(t_offsets/sample_Fs*1000)
 
     features = [age,sex,fmax,mean_RR,mean_R_Peaks,mean_T_Peaks,mean_P_Peaks,mean_Q_Peaks,mean_S_Peaks,median_RR,median_R_Peaks,std_RR,std_R_Peaks,var_RR,var_R_Peaks,skew_RR,skew_R_Peaks,kurt_RR,kurt_R_Peaks,mean_P_Onsets,mean_T_offsets,rmssd,label]
   
