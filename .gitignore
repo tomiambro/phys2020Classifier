@@ -5,6 +5,7 @@ __pycache__/
 
 datasets
 models
+mlruns
 output_folder
 # C extensions
 *.so
