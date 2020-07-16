@@ -24,7 +24,7 @@ X_eval, y_eval, nas = proc_df(df_eval, 'label', na_dict=nas)
 
 classifiers = [
     ('rf', RandomForestClassifier(n_estimators=1000, min_samples_leaf=1, max_features='sqrt', n_jobs=7)),
-    ('gb', GradientBoostingClassifier(n_estimators=1000, min_samples_leaf=1, max_features='sqrt')),
+    # ('gb', GradientBoostingClassifier(n_estimators=1000, min_samples_leaf=1, max_features='sqrt')),
     ('et', ExtraTreesClassifier(n_estimators=1000, min_samples_leaf=1, max_features='sqrt', n_jobs=7))
 ]
 
