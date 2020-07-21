@@ -8,7 +8,7 @@ from sklearn import metrics
 from sklearn.metrics import f1_score, fbeta_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 
-df = pd.read_feather('datasets/fitted/af-dataset-lead2-oversampled')
+df = pd.read_feather('datasets/fitted/af-dataset-lead2')
 
 y = df['label']
 X = df.drop('label', axis=1)
@@ -23,9 +23,11 @@ X_train, y_train, nas = proc_df(df_train, 'label')
 X_eval, y_eval, nas = proc_df(df_eval, 'label', na_dict=nas)
 
 classifiers = [
-    ('rf', RandomForestClassifier(n_estimators=1000, min_samples_leaf=1, max_features='sqrt', n_jobs=7)),
-    # ('gb', GradientBoostingClassifier(n_estimators=1000, min_samples_leaf=1, max_features='sqrt')),
-    ('et', ExtraTreesClassifier(n_estimators=1000, min_samples_leaf=1, max_features='sqrt', n_jobs=7))
+    ('rf1', RandomForestClassifier(n_estimators=1000, max_features='sqrt', n_jobs=7)),
+    # ('rf2', RandomForestClassifier(n_estimators=1000, max_features='sqrt', n_jobs=7)),
+    ('gb', GradientBoostingClassifier(n_estimators=100, random_state = 0, loss='exponential')),
+    # ('et', ExtraTreesClassifier(n_estimators=1000, max_features='sqrt', n_jobs=7)),
+    ('et2', ExtraTreesClassifier(n_estimators=1000, max_features='sqrt', n_jobs=7)),
 ]
 
 m_af = StackingClassifier(estimators=classifiers)
