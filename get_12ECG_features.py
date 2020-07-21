@@ -271,7 +271,7 @@ def get_12ECG_features_labels(data, header_data):
     kurt_R_Peaks = stats.kurtosis(peaks*gain)
 
 #   RMSSD (HRV)
-    rmssd = np.sqrt(np.mean(np.square(np.diff(idx))))
+    rmssd = np.sqrt(np.mean(np.square(np.diff(idx/sample_Fs*1000))))
 
 #   All Peaks
     ecg_signal = nk.ecg_clean(signal*gain, sampling_rate=sample_Fs, method="biosppy")
