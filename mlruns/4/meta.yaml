@@ -1,0 +1,4 @@
+artifact_location: file:///home/tom/Documents/gibio/python-classifier-2020/mlruns/4
+experiment_id: '4'
+lifecycle_stage: active
+name: AF_sampling_testing-lead2
