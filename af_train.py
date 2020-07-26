@@ -26,8 +26,8 @@ classifiers = [
     ('rf1', RandomForestClassifier(n_estimators=100, max_features='sqrt', n_jobs=7)),
     ('rf2', RandomForestClassifier(n_estimators=100, max_features='log2', n_jobs=7)),
     # ('gb', GradientBoostingClassifier(n_estimators=100, random_state = 0, loss='exponential')),
-    # ('et', ExtraTreesClassifier(n_estimators=100, max_features='sqrt', n_jobs=7)),
     ('et', ExtraTreesClassifier(n_estimators=100, max_features='sqrt', n_jobs=7)),
+    # ('et2', ExtraTreesClassifier(n_estimators=100, max_features='log2', n_jobs=7)),
 ]
 
 m_af = StackingClassifier(estimators=classifiers)
