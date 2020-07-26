@@ -23,11 +23,11 @@ X_train, y_train, nas = proc_df(df_train, 'label')
 X_eval, y_eval, nas = proc_df(df_eval, 'label', na_dict=nas)
 
 classifiers = [
-    ('rf1', RandomForestClassifier(n_estimators=1000, max_features='sqrt', n_jobs=7)),
-    # ('rf2', RandomForestClassifier(n_estimators=1000, max_features='sqrt', n_jobs=7)),
-    ('gb', GradientBoostingClassifier(n_estimators=100, random_state = 0, loss='exponential')),
-    # ('et', ExtraTreesClassifier(n_estimators=1000, max_features='sqrt', n_jobs=7)),
-    ('et2', ExtraTreesClassifier(n_estimators=1000, max_features='sqrt', n_jobs=7)),
+    ('rf1', RandomForestClassifier(n_estimators=100, max_features='sqrt', n_jobs=7)),
+    ('rf2', RandomForestClassifier(n_estimators=100, max_features='log2', n_jobs=7)),
+    # ('gb', GradientBoostingClassifier(n_estimators=100, random_state = 0, loss='exponential')),
+    # ('et', ExtraTreesClassifier(n_estimators=100, max_features='sqrt', n_jobs=7)),
+    ('et', ExtraTreesClassifier(n_estimators=100, max_features='sqrt', n_jobs=7)),
 ]
 
 m_af = StackingClassifier(estimators=classifiers)
