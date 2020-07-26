@@ -1,5 +1,7 @@
 from pandas.api.types import is_string_dtype, is_numeric_dtype, is_categorical_dtype
 import pandas as pd
+from sklearn.metrics import f1_score, fbeta_score
+from IPython.display import display
 
 def numericalize(df, col, name, max_n_cat):
     if not is_numeric_dtype(col) and ( max_n_cat is None or len(col.cat.categories)>max_n_cat):
@@ -44,3 +46,17 @@ def proc_df(df, y_fld=None, skip_flds=None, ignore_flds=None, do_scale=False, na
     res = [df, y, na_dict]
     if do_scale: res = res + [mapper]
     return res
+
+def rf_feat_importance(m, df):
+    return pd.DataFrame({'cols':df.columns, 'imp':m.feature_importances_}
+                       ).sort_values('imp', ascending=False)
+
+def display_all(df):
+    with pd.option_context("display.max_rows", 1000, "display.max_columns", 1000): 
+        display(df)
+
+def print_fscores(m, x, y):
+    res = [f1_score(y, m.predict(x)), fbeta_score(y, m.predict(x), beta=2)]
+    print(res)
+
+def plot_fi(fi): return fi.plot('cols', 'imp', 'barh', figsize=(12,8), legend=False)
