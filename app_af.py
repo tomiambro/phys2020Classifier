@@ -1,5 +1,4 @@
 import sys
-# sys.path.append("../../tutorials/fastai/old/") # go to parent dir
 from xverse.transformer import WOE
 from aux_funcs import *
 from pandas_summary import DataFrameSummary
@@ -19,9 +18,16 @@ import streamlit as st
 
 lead = 'lead2'
 
-
 st.title("Atrial Fibrilation Detector using Single Lead ECG Data")
+"""
+	Using the dataset provided by the 2020 Physionet Challenge we've developed an Atrial Fibrilation Detector trained to
+	identify AF diagnosed patiences from a dataset containing patiances with different pathologies like: PAC, RBBB, I-AVB,
+	PVC, LBBB, STD, STE and healthy individuals.
 
+	Although data from 12-lead ECG was provided, for this first analysis we've only used the lead 2 data and we've processed
+	the signals in order to create a dataframe consisting of features we believe will help us classify.
+
+"""
 @st.cache
 def load_data():
 	df = pd.read_feather('datasets/corrected/pyhs-raw-lead2-corrected')
@@ -67,7 +73,7 @@ labels
 X_train, y_train, nas = proc_df(df_train, 'label')
 X_eval, y_eval, nas = proc_df(df_eval, 'label', na_dict=nas)
 
-m_af = RandomForestClassifier(n_estimators=200, min_samples_leaf=1, max_features='sqrt', n_jobs=7, oob_score=True)
+m_af = RandomForestClassifier(n_estimators=100, min_samples_leaf=1, max_features='sqrt', n_jobs=7, oob_score=True)
 m_af.fit(X_train, y_train)
 
 """
@@ -79,9 +85,9 @@ m_af.fit(X_train, y_train)
 	This are the evaluation metrics we are actually interested in.
 """
 
-'Training Metrics: '
+st.markdown(' #### Training Metrics: ')
 'F1 and F2 Scores: ', f1_score(y_train, m_af.predict(X_train)), fbeta_score(y_train, m_af.predict(X_train), beta=2)
-'Validation Metrics: '
+st.markdown(' #### Validation Metrics: ')
 'F1 and F2 Scores: ', f1_score(y_eval, m_af.predict(X_eval)), fbeta_score(y_eval, m_af.predict(X_eval), beta=2)
 
 """
@@ -159,3 +165,68 @@ st.pyplot(plt)
 
 	#### HRV per label
 """
+
+df = df_raw.loc[df_raw['age'] > 0]
+fig = px.scatter(df, x="label", y="HRV", color='age', opacity=0.5)
+fig.update_layout(yaxis = dict(
+      range=[200,1100]))
+# fig.show()
+st.plotly_chart(fig)
+
+"""
+	#### Mean P peak value per label
+"""
+
+df = df_raw.loc[df_raw['age'] > 0]
+fig = px.scatter(df, x="label", y="mean_P_Peaks", color='age', opacity=0.5)
+fig.update_layout(yaxis = dict(
+      range=[-200,500]))
+# fig.show()
+st.plotly_chart(fig)
+
+"""
+	### Age per label
+"""
+
+df = df_raw.loc[df_raw['age'] > 0]
+fig = px.scatter(df, x="label", y="age", color='label', opacity=0.4)
+fig.update_layout(yaxis = dict(
+      range=[0,120]))
+# fig.show()
+st.plotly_chart(fig)
+
+"""
+	### HRV against age
+"""
+
+df = df_raw.loc[df_raw['age'] > 0]
+fig = px.scatter(df, x="age", y="HRV", color='label', opacity=0.7)
+fig.update_layout(yaxis = dict(
+      range=[200,1100]))
+# fig.show()
+st.plotly_chart(fig)
+
+"""
+	### Histogram of Age for each label
+"""
+
+fig = px.histogram(df_raw, orientation='v', x="age", color='label')
+st.plotly_chart(fig)
+
+"""
+	## Lets optimize our model based on MDI results
+"""
+
+thresh = 0.034
+to_keep = list(fi_mdi[fi_mdi['imp'] > thresh].cols)
+X_train_keep = X_train_drop[to_keep]
+X_eval_keep = X_eval_drop[to_keep]
+m_af = RandomForestClassifier(n_estimators=100, min_samples_leaf=1, max_features='sqrt', n_jobs=7, oob_score=True)
+m_af.fit(X_train_keep, y_train)
+# print_fscores(m_af, X_eval_keep, y_eval)
+
+
+st.markdown(' #### Training Metrics: ')
+'F1 and F2 Scores: ', f1_score(y_train, m_af.predict(X_train_keep)), fbeta_score(y_train, m_af.predict(X_train_keep), beta=2)
+st.markdown(' #### Validation Metrics: ')
+'F1 and F2 Scores: ', f1_score(y_eval, m_af.predict(X_eval_keep)), fbeta_score(y_eval, m_af.predict(X_eval_keep), beta=2)
