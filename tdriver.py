@@ -6,6 +6,8 @@ from scipy.io import loadmat
 from run_12ECG_classifier import load_12ECG_model, run_12ECG_classifier
 from get_12ECG_features import get_12ECG_features_labels
 
+import multiprocessing as mp
+
 def load_challenge_data(filename):
 
 
@@ -36,6 +38,17 @@ def save_challenge_predictions(output_directory,filename,scores,labels,classes):
 
     with open(output_file, 'w') as f:
         f.write(recording_string + '\n' + class_string + '\n' + label_string + '\n' + score_string + '\n')
+
+def process_signals(i, num_files, input_directory, df_raw):
+        print('    {}/{}...'.format(i+1, num_files))
+        tmp_input_file = os.path.join(input_directory,f)
+        data,header_data = load_challenge_data(tmp_input_file)
+        
+        features = get_12ECG_features_labels(data, header_data)
+        
+        aux = pd.DataFrame([features], columns=columns)
+        df_raw = df_raw.append(aux, ignore_index=True)
+        return df_raw
 
   
 # Find unique number of classes  
@@ -85,14 +98,14 @@ if __name__ == '__main__':
     print('Extracting 12ECG features...')
     num_files = len(input_files)
 
+
+
     for i, f in enumerate(input_files):
-        print('    {}/{}...'.format(i+1, num_files))
-        tmp_input_file = os.path.join(input_directory,f)
-        data,header_data = load_challenge_data(tmp_input_file)
-        features = get_12ECG_features_labels(data, header_data)
-        
-        aux = pd.DataFrame([features], columns=columns)
-        df_raw = df_raw.append(aux, ignore_index=True)
+
+        pool = mp.Pool(mp.cpu_count())
+        df_raw = pool.apply(process_signals, args=(i, num_files, input_directory, df_raw))
+        # df_raw = process_signals(i, num_files, input_directory, df_raw)
+        pool.close()
 
 
         # current_label, current_score = run_12ECG_classifier(data,header_data,classes, model)
