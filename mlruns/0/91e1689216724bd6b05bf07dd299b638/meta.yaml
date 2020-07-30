@@ -1,0 +1,15 @@
+artifact_uri: file:///home/tom/Documents/gibio/python-classifier-2020/mlruns/0/91e1689216724bd6b05bf07dd299b638/artifacts
+end_time: 1595799629218
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+name: ''
+run_id: 91e1689216724bd6b05bf07dd299b638
+run_uuid: 91e1689216724bd6b05bf07dd299b638
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1595799628785
+status: 3
+tags: []
+user_id: tom
