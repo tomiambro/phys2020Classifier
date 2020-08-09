@@ -78,7 +78,7 @@ if __name__ == '__main__':
     model = load_12ECG_model()
 
     # Create dataset
-    columns = ['age', 'sex', 'fmax', 'mean_RR', 'mean_R_Peaks', 'mean_T_Peaks', 'mean_P_Peaks', 'mean_Q_Peaks', 'mean_S_Peaks', 'median_RR', 'median_R_Peaks', 'std_RR', 'std_R_Peaks', 'var_RR', 'var_R_Peaks', 'skew_RR', 'skew_R_Peaks', 'kurt_RR', 'kurt_R_Peaks', 'mean_P_Onsets', 'mean_T_Offsets', 'HRV', 'RSSSD', 'RESSD', 'RKSSD', 'label']
+    columns = ['age', 'sex', 'fmax', 'mean_RR', 'mean_R_Peaks', 'mean_T_Peaks', 'mean_P_Peaks', 'mean_Q_Peaks', 'mean_S_Peaks', 'median_RR', 'median_R_Peaks', 'std_RR', 'std_R_Peaks', 'var_RR', 'var_R_Peaks', 'skew_RR', 'skew_R_Peaks', 'kurt_RR', 'kurt_R_Peaks', 'mean_P_Onsets', 'mean_T_Offsets', 'HRV', 'label']
     df_raw = pd.DataFrame(columns=columns)
 
     # Iterate over files.

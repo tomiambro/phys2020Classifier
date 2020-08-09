@@ -7,7 +7,7 @@ from scipy import fft
 
 import neurokit2 as nk
 import pandas as pd
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 # import seaborn as sns
 
 def detect_peaks(ecg_measurements,signal_frequency,gain):
@@ -245,7 +245,27 @@ def get_12ECG_features_labels(data, header_data):
 
 #   We are only using data from lead1
     peaks,idx = detect_peaks(signal,sample_Fs,gain)
-       
+
+    upper = int(0.4 * sample_Fs)
+    lower = int(0.3 * sample_Fs)
+    # heartbeats = np.array([[]])
+    heartbeats = []
+    # print(upper + lower)
+    for rr in idx:
+        l = max(0, lower)
+        u = min(upper, len(signal))
+        if len(signal[rr - l : rr + u]) == (upper + lower):
+            print(len(signal[rr - l : rr + u]))
+            heartbeats.append(signal[rr - lower : rr + upper])
+    
+    heartbeats = np.stack(heartbeats)
+    print(heartbeats)
+    mean_hb = np.mean(heartbeats, axis=0)
+    print(len(mean_hb))
+    plt.plot(mean_hb)
+    plt.show()
+
+
 #   mean
     mean_RR = np.mean(idx/sample_Fs*1000)
     mean_R_Peaks = np.mean(peaks*gain)
@@ -272,13 +292,10 @@ def get_12ECG_features_labels(data, header_data):
 
 #   RMSSD (HRV)
     rmssd = np.sqrt(np.mean(np.square(np.diff(idx/sample_Fs*1000))))
-    rsssd = np.sqrt(np.std(np.square(np.diff(idx/sample_Fs*1000))))
-    ressd = np.sqrt(stats.skew(np.square(np.diff(idx/sample_Fs*1000))))
-    rkssd = np.sqrt(stats.kurtosis(np.square(np.diff(idx/sample_Fs*1000))))
 
-#   All Peaks
     ecg_signal = nk.ecg_clean(signal*gain, sampling_rate=sample_Fs, method="biosppy")
     _ , rpeaks = nk.ecg_peaks(ecg_signal, sampling_rate=sample_Fs)
+
     try:
         signal_peak, waves_peak = nk.ecg_delineate(ecg_signal, rpeaks, sampling_rate=sample_Fs)
         t_peaks = waves_peak['ECG_T_Peaks']
@@ -325,6 +342,6 @@ def get_12ECG_features_labels(data, header_data):
     # t_offsets = t_offsets[~np.isnan(t_offsets)]
     mean_T_offsets = np.mean(t_offsets/sample_Fs*1000)
 
-    features = [age,sex,fmax,mean_RR,mean_R_Peaks,mean_T_Peaks,mean_P_Peaks,mean_Q_Peaks,mean_S_Peaks,median_RR,median_R_Peaks,std_RR,std_R_Peaks,var_RR,var_R_Peaks,skew_RR,skew_R_Peaks,kurt_RR,kurt_R_Peaks,mean_P_Onsets,mean_T_offsets,rmssd,rsssd,ressd,rkssd,label]
+    features = [age,sex,fmax,mean_RR,mean_R_Peaks,mean_T_Peaks,mean_P_Peaks,mean_Q_Peaks,mean_S_Peaks,median_RR,median_R_Peaks,std_RR,std_R_Peaks,var_RR,var_R_Peaks,skew_RR,skew_R_Peaks,kurt_RR,kurt_R_Peaks,mean_P_Onsets,mean_T_offsets,rmssd,label]
   
     return features
