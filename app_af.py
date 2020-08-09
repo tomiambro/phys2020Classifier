@@ -221,7 +221,7 @@ thresh = 0.034
 to_keep = list(fi_mdi[fi_mdi['imp'] > thresh].cols)
 X_train_keep = X_train_drop[to_keep]
 X_eval_keep = X_eval_drop[to_keep]
-m_af = RandomForestClassifier(n_estimators=100, min_samples_leaf=1, max_features='sqrt', n_jobs=7, oob_score=True)
+m_af = RandomForestClassifier(n_estimators=200, min_samples_leaf=1, max_features='sqrt', n_jobs=7, oob_score=True)
 m_af.fit(X_train_keep, y_train)
 # print_fscores(m_af, X_eval_keep, y_eval)
 
