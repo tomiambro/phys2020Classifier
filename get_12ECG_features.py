@@ -292,6 +292,7 @@ def get_12ECG_features_labels(data, header_data):
 
 #   RMSSD (HRV)
     rmssd = np.sqrt(np.mean(np.square(np.diff(idx/sample_Fs*1000))))
+    rsssd = np.sqrt(np.std(np.square(np.diff(idx/sample_Fs*1000))))
 
     ecg_signal = nk.ecg_clean(signal*gain, sampling_rate=sample_Fs, method="biosppy")
     _ , rpeaks = nk.ecg_peaks(ecg_signal, sampling_rate=sample_Fs)
@@ -342,6 +343,6 @@ def get_12ECG_features_labels(data, header_data):
     # t_offsets = t_offsets[~np.isnan(t_offsets)]
     mean_T_offsets = np.mean(t_offsets/sample_Fs*1000)
 
-    features = [age,sex,fmax,mean_RR,mean_R_Peaks,mean_T_Peaks,mean_P_Peaks,mean_Q_Peaks,mean_S_Peaks,median_RR,median_R_Peaks,std_RR,std_R_Peaks,var_RR,var_R_Peaks,skew_RR,skew_R_Peaks,kurt_RR,kurt_R_Peaks,mean_P_Onsets,mean_T_offsets,rmssd,label]
+    features = [age,sex,fmax,mean_RR,mean_R_Peaks,mean_T_Peaks,mean_P_Peaks,mean_Q_Peaks,mean_S_Peaks,median_RR,median_R_Peaks,std_RR,std_R_Peaks,var_RR,var_R_Peaks,skew_RR,skew_R_Peaks,kurt_RR,kurt_R_Peaks,mean_P_Onsets,mean_T_offsets,rmssd,rsssd,label]
   
     return features
