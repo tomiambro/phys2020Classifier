@@ -236,34 +236,33 @@ def get_12ECG_features_labels(data, header_data):
     gain = gain_lead[1]
 
     N = len(signal)
-    sp= sample_Fs/N    # resolución espectral
+    sp = sample_Fs/N    # resolución espectral
 
     Y = np.fft.fft(signal*gain)
     ff = np.linspace(0, (N/2)*sp, N/2).flatten()
     fmax = float(ff[np.where(np.abs(Y[0:N//2]) == max(np.abs(Y[0:N//2])))])
 
 
-#   We are only using data from lead1
+#   We are only using data from lead2
     peaks,idx = detect_peaks(signal,sample_Fs,gain)
 
     upper = int(0.4 * sample_Fs)
     lower = int(0.3 * sample_Fs)
-    # heartbeats = np.array([[]])
     heartbeats = []
-    # print(upper + lower)
+
     for rr in idx:
         l = max(0, lower)
         u = min(upper, len(signal))
         if len(signal[rr - l : rr + u]) == (upper + lower):
-            print(len(signal[rr - l : rr + u]))
+            # print(len(signal[rr - l : rr + u]))
             heartbeats.append(signal[rr - lower : rr + upper])
     
-    heartbeats = np.stack(heartbeats)
-    print(heartbeats)
-    mean_hb = np.mean(heartbeats, axis=0)
-    print(len(mean_hb))
-    plt.plot(mean_hb)
-    plt.show()
+    # heartbeats = np.stack(heartbeats)
+    # print(heartbeats)
+    # mean_hb = np.mean(heartbeats, axis=0)
+    # print(len(mean_hb))
+    # plt.plot(mean_hb)
+    # plt.show()
 
 
 #   mean
@@ -319,7 +318,10 @@ def get_12ECG_features_labels(data, header_data):
     p_peaks = np.asarray(p_peaks, dtype=float)
     p_peaks = p_peaks[~np.isnan(p_peaks)]
     p_peaks = [int(a) for a in p_peaks]
-    mean_P_Peaks = np.mean([signal[w] for w in p_peaks])    
+    mean_P_Peaks = np.mean([signal[w] for w in p_peaks])
+    
+    p_peaks = np.array(p_peaks)
+    mean_PP = np.mean(p_peaks/sample_Fs*1000)
 
 #   Q peaks
     q_peaks = np.asarray(q_peaks, dtype=float)
@@ -343,6 +345,6 @@ def get_12ECG_features_labels(data, header_data):
     # t_offsets = t_offsets[~np.isnan(t_offsets)]
     mean_T_offsets = np.mean(t_offsets/sample_Fs*1000)
 
-    features = [age,sex,fmax,mean_RR,mean_R_Peaks,mean_T_Peaks,mean_P_Peaks,mean_Q_Peaks,mean_S_Peaks,median_RR,median_R_Peaks,std_RR,std_R_Peaks,var_RR,var_R_Peaks,skew_RR,skew_R_Peaks,kurt_RR,kurt_R_Peaks,mean_P_Onsets,mean_T_offsets,rmssd,rsssd,label]
+    features = [age,sex,fmax,mean_RR,mean_R_Peaks,mean_T_Peaks,mean_P_Peaks,mean_PP,mean_Q_Peaks,mean_S_Peaks,median_RR,median_R_Peaks,std_RR,std_R_Peaks,var_RR,var_R_Peaks,skew_RR,skew_R_Peaks,kurt_RR,kurt_R_Peaks,mean_P_Onsets,mean_T_offsets,rmssd,rsssd,label]
   
     return features
