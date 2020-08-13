@@ -204,6 +204,41 @@ def get_12ECG_features(data, header_data):
   
     return features
 
+def get_HRVs_values(data, header_data):
+
+    tmp_hea = header_data[0].split(' ')
+    ptID = tmp_hea[0]
+    num_leads = int(tmp_hea[1])
+    sample_Fs= int(tmp_hea[2])
+    gain_lead = np.zeros(num_leads)
+    
+    for ii in range(num_leads):
+        tmp_hea = header_data[ii+1].split(' ')
+        gain_lead[ii] = int(tmp_hea[2].split('/')[0])
+
+    # for testing, we included the mean age of 57 if the age is a NaN
+    # This value will change as more data is being released
+    for iline in header_data:
+        if iline.startswith('#Age'):
+            tmp_age = iline.split(': ')[1].strip()
+            age = int(tmp_age if tmp_age != 'NaN' else 57)
+        elif iline.startswith('#Sex'):
+            tmp_sex = iline.split(': ')[1]
+            if tmp_sex.strip()=='Female':
+                sex =1
+            else:
+                sex=0
+        elif iline.startswith('#Dx'):
+            label = iline.split(': ')[1].split(',')[0]
+
+    signal = data[1]
+    gain = gain_lead[1]
+
+    ecg_signal = nk.ecg_clean(signal*gain, sampling_rate=sample_Fs, method="biosppy")
+    _ , rpeaks = nk.ecg_peaks(ecg_signal, sampling_rate=sample_Fs)
+    hrv_indices = nk.hrv_time(rpeaks, sampling_rate=sample_Fs)
+    hrv_indices['label'] = label
+    return hrv_indices
 
 def get_12ECG_features_labels(data, header_data):
 
@@ -232,8 +267,8 @@ def get_12ECG_features_labels(data, header_data):
         elif iline.startswith('#Dx'):
             label = iline.split(': ')[1].split(',')[0]
 
-    signal = data[0]
-    gain = gain_lead[0]
+    signal = data[1]
+    gain = gain_lead[1]
 
     N = len(signal)
     sp= sample_Fs/N    # resolución espectral

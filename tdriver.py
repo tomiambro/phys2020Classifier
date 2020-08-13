@@ -4,7 +4,7 @@ import numpy as np, os, sys
 import pandas as pd
 from scipy.io import loadmat
 from run_12ECG_classifier import load_12ECG_model, run_12ECG_classifier
-from get_12ECG_features import get_12ECG_features_labels
+from get_12ECG_features import get_12ECG_features_labels, get_HRVs_values
 
 import multiprocessing as mp
 
@@ -39,16 +39,18 @@ def save_challenge_predictions(output_directory,filename,scores,labels,classes):
     with open(output_file, 'w') as f:
         f.write(recording_string + '\n' + class_string + '\n' + label_string + '\n' + score_string + '\n')
 
-def process_signals(i, num_files, input_directory, df_raw):
-        print('    {}/{}...'.format(i+1, num_files))
-        tmp_input_file = os.path.join(input_directory,f)
-        data,header_data = load_challenge_data(tmp_input_file)
-        
-        features = get_12ECG_features_labels(data, header_data)
-        
-        aux = pd.DataFrame([features], columns=columns)
-        df_raw = df_raw.append(aux, ignore_index=True)
-        return df_raw
+
+def process_signals(i, f, num_files, input_directory, df_raw):
+    print('    {}/{}...'.format(i+1, num_files))
+    tmp_input_file = os.path.join(input_directory,f)
+    data,header_data = load_challenge_data(tmp_input_file)
+    
+    features = get_HRVs_values(data, header_data)
+    # features = get_12ECG_features_labels(data, header_data)
+    return features
+    # aux = pd.DataFrame([features], columns=columns)
+    # df_raw = df_raw.append(aux, ignore_index=True)
+    # return df_raw
 
   
 # Find unique number of classes  
@@ -100,12 +102,18 @@ if __name__ == '__main__':
 
 
 
-    for i, f in enumerate(input_files):
+    pool = mp.Pool(mp.cpu_count())
 
-        pool = mp.Pool(mp.cpu_count())
-        df_raw = pool.apply(process_signals, args=(i, num_files, input_directory, df_raw))
-        # df_raw = process_signals(i, num_files, input_directory, df_raw)
-        pool.close()
+    result_obj = [pool.apply_async(process_signals, args=(i, f, num_files, input_directory, df_raw)) for i, f in enumerate(input_files)]
+    
+    pool.close()
+    pool.join()
+
+    results = [r.get() for r in result_obj]
+    # print(results)
+    df_raw = pd.concat(results)
+    df_raw = df_raw.reset_index()
+    df_raw = df_raw.drop('index', axis=1)
 
 
         # current_label, current_score = run_12ECG_classifier(data,header_data,classes, model)
@@ -114,6 +122,6 @@ if __name__ == '__main__':
 
 
     os.makedirs('datasets/raw', exist_ok=True)
-    df_raw.to_feather('datasets/raw/pyhs-raw-lead1')
+    df_raw.to_feather('datasets/raw/pyhs-raw-lead2-HRV')
     print(df_raw)
     print('Done.')
