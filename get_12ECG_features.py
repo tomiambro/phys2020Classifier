@@ -5,6 +5,8 @@ from scipy.signal import butter, lfilter
 from scipy import stats
 from scipy import fft
 
+import heartpy as hp
+
 import neurokit2 as nk
 import pandas as pd
 # import matplotlib.pyplot as plt
@@ -206,6 +208,10 @@ def get_12ECG_features(data, header_data):
 
 def get_HRVs_values(data, header_data):
 
+    filter_lowcut = 0.001
+    filter_highcut = 15.0
+    filter_order = 1
+
     tmp_hea = header_data[0].split(' ')
     ptID = tmp_hea[0]
     num_leads = int(tmp_hea[1])
@@ -236,9 +242,14 @@ def get_HRVs_values(data, header_data):
 
     ecg_signal = nk.ecg_clean(signal*gain, sampling_rate=sample_Fs, method="biosppy")
     _ , rpeaks = nk.ecg_peaks(ecg_signal, sampling_rate=sample_Fs)
-    hrv_indices = nk.hrv_time(rpeaks, sampling_rate=sample_Fs)
-    hrv_indices['label'] = label
-    return hrv_indices
+    hrv_time = nk.hrv_time(rpeaks, sampling_rate=sample_Fs)
+    hrv_non = nk.hrv_nonlinear(rpeaks, sampling_rate=sample_Fs)
+
+    hrv_time['label'] = label
+    hrv_time['age'] = age
+    df = pd.concat([hrv_time, hrv_non], axis=1)
+    
+    return df
 
 def get_12ECG_features_labels(data, header_data):
 
