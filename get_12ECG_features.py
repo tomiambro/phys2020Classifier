@@ -243,13 +243,13 @@ def get_HRVs_values(data, header_data):
     ecg_signal = nk.ecg_clean(signal*gain, sampling_rate=sample_Fs, method="biosppy")
     _ , rpeaks = nk.ecg_peaks(ecg_signal, sampling_rate=sample_Fs)
     hrv_time = nk.hrv_time(rpeaks, sampling_rate=sample_Fs)
-    hrv_non = nk.hrv_nonlinear(rpeaks, sampling_rate=sample_Fs)
+    # hrv_non = nk.hrv_nonlinear(rpeaks, sampling_rate=sample_Fs)
 
-    hrv_time['label'] = label
     hrv_time['age'] = age
-    df = pd.concat([hrv_time, hrv_non], axis=1)
+    hrv_time['label'] = label
+    # df = pd.concat([hrv_time, hrv_non], axis=1)
     
-    return df
+    return hrv_time
 
 def get_12ECG_features_labels(data, header_data):
 
