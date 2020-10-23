@@ -244,7 +244,19 @@ def get_HRVs_values(data, header_data):
     _ , rpeaks = nk.ecg_peaks(ecg_signal, sampling_rate=sample_Fs)
     hrv_time = nk.hrv_time(rpeaks, sampling_rate=sample_Fs)
     # hrv_non = nk.hrv_nonlinear(rpeaks, sampling_rate=sample_Fs)
+    try:
+        signal_peak, waves_peak = nk.ecg_delineate(ecg_signal, rpeaks, sampling_rate=sample_Fs)
+        p_peaks = waves_peak['ECG_P_Peaks']
+    except ValueError:
+        print('Exception raised!')
+        pass
 
+    p_peaks = np.asarray(p_peaks, dtype=float)
+    p_peaks = p_peaks[~np.isnan(p_peaks)]
+    p_peaks = [int(a) for a in p_peaks]
+    mean_P_Peaks = np.mean([signal[w] for w in p_peaks])
+
+    hrv_time['mean_P_Peaks'] = mean_P_Peaks
     hrv_time['age'] = age
     hrv_time['label'] = label
     # df = pd.concat([hrv_time, hrv_non], axis=1)
