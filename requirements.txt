@@ -31,7 +31,7 @@ kiwisolver==1.2.0
 Mako==1.1.3
 MarkupSafe==1.1.1
 matplotlib==3.3.0
-mlflow==1.10.0
+mlflow==1.23.1
 msrest==0.6.17
 neurokit2==0.0.39
 numpy==1.17.4
