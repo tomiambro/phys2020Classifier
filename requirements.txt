@@ -34,7 +34,7 @@ matplotlib==3.3.0
 mlflow==1.10.0
 msrest==0.6.17
 neurokit2==0.0.39
-numpy==1.17.4
+numpy==1.22.0
 oauthlib==3.1.0
 pandas==0.25.3
 pandas-summary==0.0.7
